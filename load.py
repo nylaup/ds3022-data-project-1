@@ -18,9 +18,38 @@ def load_parquet_files():
         logger.info("Connected to DuckDB instance")
 
         con.execute(f"""
-            -- SQL goes here
+            -- Drop if existing and create new table
+            DROP TABLE IF EXISTS yellow_tripdata;
+            CREATE TABLE yellow_tripdata(
+                trip_distance double(100),
+                pickup_datetime timestamp(100)
+            );
         """)
         logger.info("Dropped table if exists")
+
+        yellow_url = "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2024-{:02d}.parquet"
+        for month in range(1,13):
+            url = yellow_url.format(month)
+            con.execute(f"""
+            -- Insert data from each month
+            INSERT INTO yellow_tripdata
+                SELECT trip_distance, tpep_pickup_datetime 
+                FROM read_parquet('{url}');
+            """)
+            logger.info(f"Added month {month} data to yellow table")
+
+        count = con.execute(f"""
+            -- SQL goes here 
+            SELECT COUNT(*) FROM yellow_tripdata;
+        """)
+        print(f"Number of records in yellow taxi data: {count.fetchone()[0]}")
+        logger.info(f"Number of records in yellow taxi data: {count.fetchone()[0]}")
+
+        con.execute(f"""
+            DROP TABLE IF EXISTS emissions_lookup;
+            CREATE TABLE emisssions_lookup AS 
+                SELECT * FROM read_csv('data/vehicle_emissions.csv');
+        """)
 
     except Exception as e:
         print(f"An error occurred: {e}")
