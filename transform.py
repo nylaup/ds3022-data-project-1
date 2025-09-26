@@ -40,44 +40,29 @@ def transform_data():
         logger.info("Added column for trip mph")
 
         con.execute(f"""
-            -- Calculate pickup hour
+            -- Add columns
             ALTER TABLE yellow_tripdata
+            ADD COLUMN month INTEGER,
+            ADD COLUMN week_of_year INTEGER,
+            ADD COLUMN day_of_week TEXT,
             ADD COLUMN hour INT;
-
-            UPDATE yellow_tripdata
-            SET hour = EXTRACT(HOUR FROM pickup_datetime);
+            
+            UPDATE yellow_tripdata;
+            SET month = MONTH(pickup_datetime),
+                week_of_year = WEEK(pickup_datetime),
+                hour = HOUR(pickup_datetime),
+                day_of_week = CASE DAYOFWEEK(pickup_datetime)
+                    WHEN 1 THEN 'Monday'
+                    WHEN 2 THEN 'Tuesday'
+                    WHEN 3 THEN 'Wednesday'
+                    WHEN 4 THEN 'Thursday'
+                    WHEN 5 THEN 'Friday'
+                    WHEN 6 THEN 'Saturday'
+                    WHEN 7 THEN 'Sunday'
+                END;
         """)
-        logger.info("Added column for pickup hour")
-
-        con.execute(f"""
-            -- Calculate trip day of the week
-            ALTER TABLE yellow_tripdata
-            ADD COLUMN day_of_week TEXT;
-                    
-            UPDATE yellow_tripdata
-            SET day_of_week = EXTRACT(DAYNAME(dayofweek FROM pickup_datetime));
-        """)
-        logger.info("Added column for week of year")
-
-        con.execute(f"""
-            -- Calculate week number 
-            ALTER TABLE yellow_tripdata
-            ADD COLUMN week_of_year INTEGER;
-                    
-            UPDATE yellow_tripdata
-            SET week_of_year = EXTRACT(WEEK FROM pickup_datetime);
-        """)
-        logger.info("Added column for week of year")
-
-        con.execute(f"""
-            -- Calculate month
-            ALTER TABLE yellow_tripdata
-            ADD COLUMN month INT;
-
-            UPDATE yellow_tripdata
-            SET month = EXTRACT(MONTH FROM pickup_datetime);
-        """)
-        logger.info("")
+        logger.info("Added all date time columns")
+        print("Added all date time columns")
 
     except Exception as e:
         print(f"An error occurred: {e}")
