@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: external_data
+    schema: main
+    tables:
+      - name: green_tripdata
+      - name: emissions_lookup

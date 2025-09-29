@@ -3,7 +3,7 @@ taxi_co2:
   outputs:
     dev:
       type: duckdb
-      path: emissions.duckdb
+      path: '/home/nylup/DS3022/ds3022-data-project-1/emissions.duckdb'
       schema: main
       threads: 4
       keepalives_idle: 0
