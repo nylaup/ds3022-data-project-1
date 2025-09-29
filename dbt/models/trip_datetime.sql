@@ -1,3 +1,4 @@
+{{ config(materialized='table')}}
 
 ALTER TABLE yellow_tripdata
 ADD COLUMN month INTEGER,

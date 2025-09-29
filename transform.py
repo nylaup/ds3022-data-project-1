@@ -17,52 +17,53 @@ def transform_data():
         con = duckdb.connect(database='emissions.duckdb', read_only=False)
         logger.info("Connected to DuckDB instance")
 
-        con.execute(f"""
-            -- Calculate CO2 per trip (kg)
-            ALTER TABLE yellow_tripdata 
-            ADD COLUMN trip_co2_kgs DOUBLE;
-                    
-            UPDATE yellow_tripdata
-            SET trip_co2_kgs = yellow_tripdata.trip_distance * e.co2_grams_per_mile / 1000
-                FROM emissions_lookup e
-                WHERE e.vehicle_type = 'yellow_taxi'; 
-        """)
-        logger.info("Added column for emissions per trip")
+        for color in ["yellow", "green"]:
+            con.execute(f"""
+                -- Calculate CO2 per trip (kg)
+                ALTER TABLE {color}_tripdata 
+                ADD COLUMN IF NOT EXISTS trip_co2_kgs DOUBLE;
+                        
+                UPDATE {color}_tripdata
+                SET trip_co2_kgs = {color}_tripdata.trip_distance * e.co2_grams_per_mile / 1000
+                    FROM emissions_lookup e
+                    WHERE e.vehicle_type = '{color}_taxi'; 
+            """)
+            logger.info(f"Calculated emissions per trip for {color} table")
 
-        con.execute(f"""
-            -- Calculate mph per trip
-            ALTER TABLE yellow_tripdata
-            ADD COLUMN avg_mph DOUBLE;
-                    
-            UPDATE yellow_tripdata
-            SET avg_mph = (trip_distance * 3600) / trip_duration;
-        """)
-        logger.info("Added column for trip mph")
 
-        con.execute(f"""
-            -- Add columns
-            ALTER TABLE yellow_tripdata
-            ADD COLUMN month INTEGER,
-            ADD COLUMN week_of_year INTEGER,
-            ADD COLUMN day_of_week TEXT,
-            ADD COLUMN hour INT;
-            
-            UPDATE yellow_tripdata;
-            SET month = MONTH(pickup_datetime),
-                week_of_year = WEEK(pickup_datetime),
-                hour = HOUR(pickup_datetime),
-                day_of_week = CASE DAYOFWEEK(pickup_datetime)
-                    WHEN 1 THEN 'Monday'
-                    WHEN 2 THEN 'Tuesday'
-                    WHEN 3 THEN 'Wednesday'
-                    WHEN 4 THEN 'Thursday'
-                    WHEN 5 THEN 'Friday'
-                    WHEN 6 THEN 'Saturday'
-                    WHEN 7 THEN 'Sunday'
-                END;
-        """)
-        logger.info("Added all date time columns")
-        print("Added all date time columns")
+            con.execute(f"""
+                --- Calculate average trip mph
+                ALTER TABLE {color}_tripdata
+                ADD COLUMN IF NOT EXISTS avg_mph DOUBLE;
+                        
+                UPDATE {color}_tripdata
+                SET avg_mph = (trip_distance * 3600) / date_diff('seconds', dropoff_datetime, pickup_datetime);
+            """)
+            logger.info(f"Calculated average trip mph for {color} table")
+
+            con.execute(f"ALTER TABLE {color}_tripdata ADD COLUMN IF NOT EXISTS month INTEGER;")
+            con.execute(f"ALTER TABLE {color}_tripdata ADD COLUMN IF NOT EXISTS week_of_year INTEGER;")
+            con.execute(f"ALTER TABLE {color}_tripdata ADD COLUMN IF NOT EXISTS day_of_week TEXT;")
+            con.execute(f"ALTER TABLE {color}_tripdata ADD COLUMN IF NOT EXISTS hour INT;")
+            logger.info(f"Added datetime columns to {color} table")
+
+            con.execute(f"""
+                -- Set datetime columns
+                UPDATE {color}_tripdata
+                SET month = MONTH(pickup_datetime),
+                    week_of_year = WEEK(pickup_datetime),
+                    hour = HOUR(pickup_datetime),
+                    day_of_week = CASE DAYOFWEEK(pickup_datetime)
+                        WHEN 1 THEN 'Monday'
+                        WHEN 2 THEN 'Tuesday'
+                        WHEN 3 THEN 'Wednesday'
+                        WHEN 4 THEN 'Thursday'
+                        WHEN 5 THEN 'Friday'
+                        WHEN 6 THEN 'Saturday'
+                        WHEN 7 THEN 'Sunday'
+                    END;
+            """)
+            logger.info(f"Calculated date time columns to {color} table")
 
     except Exception as e:
         print(f"An error occurred: {e}")

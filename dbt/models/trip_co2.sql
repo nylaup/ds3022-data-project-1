@@ -1,3 +1,5 @@
+{{ config(materialized='table')}}
+
 ALTER TABLE yellow_tripdata 
 ADD COLUMN trip_co2_kgs DOUBLE;
                     
