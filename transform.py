@@ -54,16 +54,18 @@ def transform_data():
                     week_of_year = WEEK(pickup_datetime),
                     hour = HOUR(pickup_datetime),
                     day_of_week = CASE DAYOFWEEK(pickup_datetime)
+                        WHEN 0 THEN 'Sunday'
                         WHEN 1 THEN 'Monday'
                         WHEN 2 THEN 'Tuesday'
                         WHEN 3 THEN 'Wednesday'
                         WHEN 4 THEN 'Thursday'
                         WHEN 5 THEN 'Friday'
                         WHEN 6 THEN 'Saturday'
-                        WHEN 7 THEN 'Sunday'
                     END;
             """)
             logger.info(f"Calculated date time columns to {color} table")
+
+            print(f"Transformations complete to {color} table")
 
     except Exception as e:
         print(f"An error occurred: {e}")
