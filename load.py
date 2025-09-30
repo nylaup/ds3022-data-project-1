@@ -54,7 +54,7 @@ def load_parquet_files():
                         FROM read_parquet('{url}');
                     """)
                     logger.info(f"Added month {month} data to {color} table")
-                    time.sleep(60) #Sleep so it doesn't overwhelm website 
+                    time.sleep(10) #Sleep so it doesn't overwhelm website 
 
                 count = con.execute(f"""
                     -- Count records in table 
