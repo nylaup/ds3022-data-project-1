@@ -1,6 +1,7 @@
 import duckdb
 import logging
 
+#DID TRANSFORMATION USING DBT IN DBT FOLDER 
 
 logging.basicConfig(
     level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
@@ -17,7 +18,7 @@ def transform_data():
         con = duckdb.connect(database='emissions.duckdb', read_only=False)
         logger.info("Connected to DuckDB instance")
 
-        for color in ["yellow", "green"]:
+        for color in ["yellow", "green"]: 
             con.execute(f"""
                 -- Calculate CO2 per trip (kg)
                 ALTER TABLE {color}_tripdata 
@@ -29,7 +30,6 @@ def transform_data():
                     WHERE e.vehicle_type = '{color}_taxi'; 
             """)
             logger.info(f"Calculated emissions per trip for {color} table")
-
 
             con.execute(f"""
                 --- Calculate average trip mph

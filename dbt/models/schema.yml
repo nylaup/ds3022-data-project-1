@@ -2,7 +2,9 @@ version: 2
 
 sources:
   - name: external_data
+    description: raw data from duckdb
     schema: main
     tables:
       - name: green_tripdata
+      - name: yellow_tripdata
       - name: emissions_lookup
