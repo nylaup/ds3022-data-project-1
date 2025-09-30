@@ -22,7 +22,7 @@ def load_parquet_files():
         if all_10 == True:
             years = range(15,25) #Would then iterate through all 10 years to load data
         else:
-            years = 2024 #Just use 2024 data 
+            years = [24] #Just use 2024 data 
 
         for color in ['yellow', 'green']: #Load both colors 
             for year in years: #Iterate through years 
